@@ -1,0 +1,39 @@
+const fs = require('fs');
+const oracledb = require('oracledb');
+const dbConfig = require('./dbconfig.js');
+
+
+let libPath;
+if (process.platform === 'win32') {           
+  libPath = 'C:\\oracle\\instantclient_19_12';
+} else if (process.platform === 'darwin') {   
+  libPath = process.env.HOME + '/Downloads/instantclient_19_8';
+}
+if (libPath && fs.existsSync(libPath)) {
+  oracledb.initOracleClient({ libDir: libPath });
+}
+
+async function run() {
+
+  let connection;
+
+  try {
+    // Get a non-pooled connection
+    connection = await oracledb.getConnection(dbConfig);
+
+    console.log('Connection was successful!');
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+}
+
+run();
